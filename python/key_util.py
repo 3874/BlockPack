@@ -25,9 +25,11 @@ class KEY:
 
     @staticmethod
     def MakeThash(data):
-        if isinstance(data, str):
-            data = data.encode('utf-8')
-        return hashlib.sha256(data).digest()
+        if not isinstance(data, str):
+            data = str(data)  # 데이터가 문자열이 아닐 경우 문자열로 변환
+        data = data.encode('utf-8')  # UTF-8로 인코딩
+        hash_bytes = hashlib.sha256(data).digest()  # SHA-256 해시값 생성
+        return base64.b64encode(hash_bytes).decode('utf-8')
 
     @staticmethod
     def MakeKeypair():

@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="./js/key-util.js"></script>
+    <script src="./js/core-function.js"></script>
 </head>
 <body>
     <h1>키 쌍 생성 및 주소 생성기</h1>
@@ -24,31 +25,24 @@
             $('#addressOutput').html('주소: ' + address);
             
             var message = "Happy Birth Day";
-            var signature = KEY.MakeSignature(message, keypair.PrivateKey, keypair.PublicKey);
-            var payload = {
-                signature: signature,
-                publicKey: keypair.PublicKey,
-                message: message
-            };
-            var response = await request(payload);
-            $('#signatureOutput').html('서명: ' + signature + '<br>유효한 서명: ' + response.result);
+            var param = JSON.stringify({
+                target: 'doremi',
+                message: message,
+                amount: '1000'
+            });
+            var payload = JSON.stringify({
+                process: 'verify',
+                version: '0.0.1',
+                address: address,
+                parameter: param,
+                timestamp: Date.now(),
+            });
+            var response = await Request(payload, keypair.PrivateKey, keypair.PublicKey);
+            console.log(response);
+            $('#signatureOutput').html('유효한 서명: ' + response.result);
         });
 
-        async function request(payload) {
-            // POST로 수정합니다.
-            return $.ajax({
-                url: 'http://localhost:9000/verify',
-                type: 'POST', // GET을 POST로 변경
-                contentType: 'application/json', // JSON 형식으로 전송
-                data: JSON.stringify(payload),
-                success: function(response) {
-                    $('#signatureOutput').append('<br>' + response);
-                },
-                error: function(xhr) {
-                    $('#signatureOutput').append('<br>Error: ' + xhr.status + ' ' + xhr.statusText);
-                }
-            });
-        }
+        
     });
 </script>
 
