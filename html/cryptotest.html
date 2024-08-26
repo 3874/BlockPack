@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>키 관리</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="../js/key-util.js"></script>
+</head>
+<body>
+    <h1>키 쌍 생성 및 주소 생성기</h1>
+    <button id="generateKeyPair">키 쌍 생성</button>
+    <div id="keyOutput" style="margin-top: 20px;"></div>
+    <div id="addressOutput" style="margin-top: 20px;"></div>
+    <div id="signatureOutput" style="margin-top: 20px;"></div>
+</body>
+<script>
+    $(document).ready(function() {
+        $('#generateKeyPair').click(async function() {
+            var keypair = KEY.MakeKeypair();
+            $('#keyOutput').html('공개 키: ' + keypair.PublicKey + '<br> 비공개 키: ' + keypair.PrivateKey);
+            var address = KEY.MakeAddress(keypair.PublicKey);
+            $('#addressOutput').html('주소: ' + address);
+            
+            var message = "Happy Birth Day";
+            var signature = KEY.MakeSignature(message, keypair.PrivateKey, keypair.PublicKey);
+            var payload = {
+                signature: signature,
+                publicKey: keypair.PublicKey,
+                message: message
+            };
+            var response = await request(payload);
+            $('#signatureOutput').html('서명: ' + signature + '<br>유효한 서명: ' + response.result);
+        });
+
+        async function request(payload) {
+            // POST로 수정합니다.
+            return $.ajax({
+                url: 'http://localhost:9000/verify',
+                type: 'POST', // GET을 POST로 변경
+                contentType: 'application/json', // JSON 형식으로 전송
+                data: JSON.stringify(payload),
+                success: function(response) {
+                    $('#signatureOutput').append('<br>' + response);
+                },
+                error: function(xhr) {
+                    $('#signatureOutput').append('<br>Error: ' + xhr.status + ' ' + xhr.statusText);
+                }
+            });
+        }
+    });
+</script>
+
+</html>
